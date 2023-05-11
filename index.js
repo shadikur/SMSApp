@@ -23,7 +23,7 @@ const axios = require("axios");
     4- Replace the webhook URL into this variable.
 */
 const webhookURL =
-  "https://compsourceeng.webhook.office.com/webhookb2/41c3f714-5063-4c1e-a3f3-2987d39604ff@9daebd7e-3d1c-4c8d-9a23-0f8875b2d2fb/IncomingWebhook/XXXXXXX/XXXXXXXXX";
+  "https://compsourceeng.webhook.office.com/webhookb2/41c3f714-5063-4c1e-a3f3-2987d39604ff@9daebd7e-3d1c-4c8d-9a23-0f8875b2d2fb/IncomingWebhook/";
 
 // this card can be created via https://amdesigner.azurewebsites.net/ then replace the JSON payload into this variable.
 
@@ -76,7 +76,17 @@ async function run() {
 
     app.post("/webhook", async (req, res) => {
       const data = req.body;
-      const result = await colName.insertOne(data);
+      const from = data.data.payload.from.phone_number;
+      const textMessage = data.data.payload.text;
+      const to = data.data.payload.to[0].phone_number;
+
+      const smsData = {
+        from,
+        to,
+        textMessage,
+      };
+
+      const result = await colName.insertOne(smsData);
       card = {
         $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
         type: "AdaptiveCard",
@@ -95,7 +105,7 @@ async function run() {
                   {
                     type: "TextBlock",
                     id: "480984fe-37f0-68a5-d757-318cc1292d11",
-                    text: "You have received a SMS from NUMBER",
+                    text: `You have received a SMS from ${from}`,
                     wrap: true,
                     size: "Medium",
                     weight: "Bolder",
@@ -119,7 +129,7 @@ async function run() {
                   {
                     type: "TextBlock",
                     id: "15f389aa-05ab-4446-57d3-dca4f28805c2",
-                    text: "This is a text block. Insert your text here.",
+                    text: `${textMessage}`,
                     wrap: true,
                     color: "Accent",
                     size: "ExtraLarge",
@@ -136,7 +146,7 @@ async function run() {
                   {
                     type: "TextBlock",
                     id: "133092ea-4cae-66f3-5c2d-9c7cbba559db",
-                    text: "NOTE: Compusource SMS enabled phone number: ",
+                    text: `Recieved on: ${to}`,
                     wrap: true,
                     size: "Small",
                   },
